@@ -306,6 +306,7 @@ namespace DLogs2
     }
     void dlogs_separator(int level, DLogsContext *context);
 }
+#define check___
 #define DLOGS_MESSAGE_BADPOINTER__KEY (1001)
 #define DLOGS_MESSAGE_BADVALUE__KEY (1002)
 #define DLOGS_MESSAGE_FUNCFAIL__KEY (1003)
