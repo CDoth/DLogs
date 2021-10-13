@@ -6,37 +6,37 @@
 #define INNER_ERROR(description, error_code) \
     std::cout << " >>>>>>> DLogContext inner fault: error: [" << description << "] call: [" << D_FUNC_NAME << "] code: [" << error_code << "]" <<std::endl;
 
-int DLogs2::default_console_parse(const char *line)
+int DLogs::default_console_parse(const char *line)
 {
     printf("%s",line);
     return 0;
 }
-int DLogs2::default_file_parse(FILE *f, const char *line)
+int DLogs::default_file_parse(FILE *f, const char *line)
 {
     fwrite(line, 1, strlen(line), f);
     return 0;
 }
-bool DLogs2::default_lvl_cmp__more(int base_level, int local_level)
+bool DLogs::default_lvl_cmp__more(int base_level, int local_level)
 {
     return local_level > base_level;
 }
-bool DLogs2::default_lvl_cmp__more_oe(int base_level, int local_level)
+bool DLogs::default_lvl_cmp__more_oe(int base_level, int local_level)
 {
     return local_level >= base_level;
 }
-bool DLogs2::default_lvl_cmp__less(int base_level, int local_level)
+bool DLogs::default_lvl_cmp__less(int base_level, int local_level)
 {
     return local_level < base_level;
 }
-bool DLogs2::default_lvl_cmp__less_oe(int base_level, int local_level)
+bool DLogs::default_lvl_cmp__less_oe(int base_level, int local_level)
 {
     return local_level <= base_level;
 }
-bool DLogs2::default_lvl_cmp__equal(int base_level, int local_level)
+bool DLogs::default_lvl_cmp__equal(int base_level, int local_level)
 {
     return base_level == local_level;
 }
-void DLogs2::DLogsContext::init_all()
+void DLogs::DLogsContext::init_all()
 {
     is_console_available = true;
     is_file_available = false;
@@ -66,27 +66,33 @@ void DLogs2::DLogsContext::init_all()
     double_precision = 6;
 
     buffer_pos = 0;
-    buffer = DArray<char>(DLOGS2_DEFAULT_BUFFER_SIZE);
+    buffer = DArray<char>(DLOGS_DEFAULT_BUFFER_SIZE);
     buffer_current_level = 0;
 }
 
-const char *DLogs2::DLogsContext::get_float_format()
+const char *DLogs::DLogsContext::get_float_format()
 {
     sprintf(format, "%%.%df ", float_precision);
     return format;
 }
-const char *DLogs2::DLogsContext::get_double_format()
+const char *DLogs::DLogsContext::get_double_format()
 {
     sprintf(format, "%%.%df ", double_precision);
     return format;
 }
-void DLogs2::DLogsContext::out(int level, const char *o)
+void DLogs::DLogsContext::out(int level, const char *o)
 {
+//    std::cout << D_FUNC_NAME << " level: " << level << " content: [" << o << "]" << std::endl;
     if(is_console_available && c_print_callback)
     {
         if(lvl_cmp(log_level, level))
             c_print_callback(o);
+//        else
+//        {
+//            std::cout << "log_level: " << log_level << " level: " << level << std::endl;
+//        }
     }
+
     if(is_file_available && f_print_callback)
     {
         std::for_each(files.constBegin(), files.constEnd(), OpDLFileParser(f_print_callback, o, level));
@@ -96,7 +102,7 @@ void DLogs2::DLogsContext::out(int level, const char *o)
         s_print_callback(level, special_opaque, o);
     }
 }
-size_t DLogs2::DLogsContext::flush(int level)
+size_t DLogs::DLogsContext::flush(int level)
 {
 //    std::cout << "===================== " << D_FUNC_NAME << " buffer_pos: " << buffer_pos << " buffer_size: " << buffer.size() << " buffer: " << buffer.begin() << std::endl;
     size_t r = 0;
@@ -109,7 +115,7 @@ size_t DLogs2::DLogsContext::flush(int level)
     }
     return r;
 }
-size_t DLogs2::DLogsContext::flush(int level, const char *line)
+size_t DLogs::DLogsContext::flush(int level, const char *line)
 {
     if(line)
     {
@@ -118,7 +124,7 @@ size_t DLogs2::DLogsContext::flush(int level, const char *line)
     }
     return 0;
 }
-int DLogs2::DLogsContext::put_to_buffer(int level, const char *line)
+int DLogs::DLogsContext::put_to_buffer(int level, const char *line)
 {
     if(line)
     {
@@ -131,7 +137,7 @@ int DLogs2::DLogsContext::put_to_buffer(int level, const char *line)
         char *buffer_begin = buffer.begin();
         int64_t l = strlen(line);
         size_t total_flushed = 0;
-        while(l > 0 && total_flushed < DLOGS2_MAX_BYTES_PUT_TO_BUFFER)
+        while(l > 0 && total_flushed < DLOGS_MAX_BYTES_PUT_TO_BUFFER)
         {
             size_t free_space = buffer.size() - buffer_pos;
             size_t r = snprintf(buffer_begin + buffer_pos, free_space, "%s", line + total_flushed);
@@ -164,18 +170,18 @@ int DLogs2::DLogsContext::put_to_buffer(int level, const char *line)
 
 
 
-void DLogs2::DLogsContext::dlogs_separator_inner(int level)
+void DLogs::DLogsContext::dlogs_separator_inner(int level)
 {
     out(level, separator.c_str());
     print_new_line(level);
 }
 
-DLogs2::DLogsContext::DLogsContext()
+DLogs::DLogsContext::DLogsContext()
 {
     init_all();
 //    std::cout << "Empty DLogsContext: " << this << std::endl;
 }
-DLogs2::DLogsContext::DLogsContext(const char *_stream_name)
+DLogs::DLogsContext::DLogsContext(const char *_stream_name)
 {
     init_all();
     if(_stream_name)
@@ -183,7 +189,7 @@ DLogs2::DLogsContext::DLogsContext(const char *_stream_name)
 //    std::cout << "Spec DLogsContext: " << this << " stream name: " << _stream_name <<  std::endl;
 
 }
-DLogs2::DLogsContext::~DLogsContext()
+DLogs::DLogsContext::~DLogsContext()
 {
 //    std::cout << D_FUNC_NAME << " context: " << this << std::endl;
     FOR_VALUE(files.size(), i)
@@ -197,40 +203,40 @@ DLogs2::DLogsContext::~DLogsContext()
 //{
 
 //}
-void DLogs2::DLogsContext::parse_console(bool state)
+void DLogs::DLogsContext::parse_console(bool state)
 {
     is_console_available = state;
 }
-void DLogs2::DLogsContext::parse_file(bool state)
+void DLogs::DLogsContext::parse_file(bool state)
 {
     is_file_available = state;
 }
-void DLogs2::DLogsContext::parse_special(bool state)
+void DLogs::DLogsContext::parse_special(bool state)
 {
     is_special_available = state;
 }
-void DLogs2::DLogsContext::set_lvl_cmp_callback(DLogs2::LOG_LEVEL_CMP_CALLBACK c)
+void DLogs::DLogsContext::set_lvl_cmp_callback(DLogs::LOG_LEVEL_CMP_CALLBACK c)
 {
     lvl_cmp = c;
 }
-void DLogs2::DLogsContext::parse_set_console_tool(DLogs2::PARSE_CONSOLE_TOOL tool)
+void DLogs::DLogsContext::parse_set_console_tool(DLogs::PARSE_CONSOLE_TOOL tool)
 {
     c_print_callback = tool;
 }
-void DLogs2::DLogsContext::parse_set_file_tool(DLogs2::PARSE_FILE_TOOL tool)
+void DLogs::DLogsContext::parse_set_file_tool(DLogs::PARSE_FILE_TOOL tool)
 {
     f_print_callback = tool;
 }
-void DLogs2::DLogsContext::parse_set_special_tool(DLogs2::PARSE_SPECIAL_TOOL tool)
+void DLogs::DLogsContext::parse_set_special_tool(DLogs::PARSE_SPECIAL_TOOL tool)
 {
     s_print_callback = tool;
 }
 
-void DLogs2::DLogsContext::set_special_data(void *data)
+void DLogs::DLogsContext::set_special_data(void *data)
 {
     special_opaque = data;
 }
-void DLogs2::DLogsContext::file_add(const char *path, const char *key)
+void DLogs::DLogsContext::file_add(const char *path, const char *key)
 {
     FILE *target = fopen(path, "wb");
     if(target)
@@ -252,21 +258,21 @@ void DLogs2::DLogsContext::file_add(const char *path, const char *key)
     DLogsFile &file = files[i]; \
             action; }}
 
-void DLogs2::DLogsContext::file_lock(const char *key)
+void DLogs::DLogsContext::file_lock(const char *key)
 {
     if(key)
     {
         FIND_FILE_BY_KEY(file.is_available = false; parse_file_state(files[i].target, 'l'))
     }
 }
-void DLogs2::DLogsContext::file_unlock(const char *key)
+void DLogs::DLogsContext::file_unlock(const char *key)
 {
     if(key)
     {
         FIND_FILE_BY_KEY(file.is_available = true; parse_file_state(files[i].target, 'u'))
     }
 }
-void DLogs2::DLogsContext::file_remove(const char *key)
+void DLogs::DLogsContext::file_remove(const char *key)
 {
     if(key)
     {
@@ -274,7 +280,7 @@ void DLogs2::DLogsContext::file_remove(const char *key)
     }
 }
 
-void DLogs2::DLogsContext::file_add_level(const char *key, int level)
+void DLogs::DLogsContext::file_add_level(const char *key, int level)
 {
     if(key && level >= 0)
     {
@@ -282,14 +288,14 @@ void DLogs2::DLogsContext::file_add_level(const char *key, int level)
     }
 }
 
-void DLogs2::DLogsContext::file_remove_level(const char *key, int level)
+void DLogs::DLogsContext::file_remove_level(const char *key, int level)
 {
     if(key && level >= 0)
     {
         FIND_FILE_BY_KEY(file.levels.remove(level))
     }
 }
-bool DLogs2::DLogsContext::file_is_available(const char *key)
+bool DLogs::DLogsContext::file_is_available(const char *key)
 {
     if(key)
     {
@@ -299,11 +305,11 @@ bool DLogs2::DLogsContext::file_is_available(const char *key)
 }
 #undef RUN_BY_FILES
 
-void DLogs2::DLogsContext::header_set(const DLogs2::header_state &hs)
+void DLogs::DLogsContext::header_set(const DLogs::header_state &hs)
 {
     header = hs;
 }
-void DLogs2::DLogsContext::header_set_all(bool date, bool fname, bool ltime, bool rtime, bool mesnum, bool sname, bool level)
+void DLogs::DLogsContext::header_set_all(bool date, bool fname, bool ltime, bool rtime, bool mesnum, bool sname, bool level)
 {
     header.cdate = date;
     header.fname = fname;
@@ -313,14 +319,14 @@ void DLogs2::DLogsContext::header_set_all(bool date, bool fname, bool ltime, boo
     header.sname = sname;
     header.level = level;
 }
-DLogs2::DLogsContext *DLogs2::DLogsContext::header_set_message(const char *message)
+DLogs::DLogsContext *DLogs::DLogsContext::header_set_message(const char *message)
 {
     if(message)
         header_message = message;
     return this;
 }
 
-DLogs2::DLogsContext *DLogs2::DLogsContext::header_set_message(int message_key)
+DLogs::DLogsContext *DLogs::DLogsContext::header_set_message(int message_key)
 {
     auto m = messages.find(message_key);
     if(m != messages.end())
@@ -328,40 +334,40 @@ DLogs2::DLogsContext *DLogs2::DLogsContext::header_set_message(int message_key)
     return this;
 }
 
-int DLogs2::DLogsContext::add_message(const char *m, int key)
+int DLogs::DLogsContext::add_message(const char *m, int key)
 {
     messages[key] = m;
     return key;
 }
-void DLogs2::DLogsContext::separator_set_size(int size)
+void DLogs::DLogsContext::separator_set_size(int size)
 {
     char s = separator.empty() ? '-' : separator.front();
     separator = std::string(size, s);
 }
-void DLogs2::DLogsContext::separator_set_symb(char symb)
+void DLogs::DLogsContext::separator_set_symb(char symb)
 {
     FOR_VALUE(separator.size(), i)
     {
         separator[i] = symb;
     }
 }
-void DLogs2::DLogsContext::precision_float(unsigned int p)
+void DLogs::DLogsContext::precision_float(unsigned int p)
 {
     if(p < 10)
         float_precision = p;
 }
-void DLogs2::DLogsContext::precision_double(unsigned int p)
+void DLogs::DLogsContext::precision_double(unsigned int p)
 {
     if(p < 10)
         double_precision = p;
 }
 
-char DLogs2::local_buffer[DLOGS2_LOCAL_BUFFER_SIZE];
+char DLogs::local_buffer[DLOGS_LOCAL_BUFFER_SIZE];
 #define LOAD_TO_BUFFER(...)\
-    snprintf(local_buffer, DLOGS2_LOCAL_BUFFER_SIZE, __VA_ARGS__); \
+    snprintf(local_buffer, DLOGS_LOCAL_BUFFER_SIZE, __VA_ARGS__); \
     put_to_buffer(level, local_buffer);
 
-void DLogs2::DLogsContext::add_header(int level, const char *caller_name)
+void DLogs::DLogsContext::add_header(int level, const char *caller_name)
 {
     time_t t = time(NULL);
     struct tm now = *localtime(&t);
@@ -421,7 +427,7 @@ void DLogs2::DLogsContext::add_header(int level, const char *caller_name)
         add_space(level);
 }
 
-int DLogs2::DLogsContext::parse_file_state(FILE *f, char state)
+int DLogs::DLogsContext::parse_file_state(FILE *f, char state)
 {
     if(f_print_callback)
     {
@@ -471,22 +477,22 @@ int DLogs2::DLogsContext::parse_file_state(FILE *f, char state)
 
     return 0;
 }
-void DLogs2::DLogsContext::print_new_line(int level)
+void DLogs::DLogsContext::print_new_line(int level)
 {
     out(level, "\n");
 }
-void DLogs2::DLogsContext::add_new_line(int level)
+void DLogs::DLogsContext::add_new_line(int level)
 {
     if(buffer_pos < buffer.size())
         buffer[buffer_pos++] = '\n';
     else
         flush(level), add_new_line(level);
 }
-void DLogs2::DLogsContext::print_space(int level)
+void DLogs::DLogsContext::print_space(int level)
 {
     out(level, " ");
 }
-void DLogs2::DLogsContext::add_space(int level)
+void DLogs::DLogsContext::add_space(int level)
 {
     if(buffer_pos < buffer.size())
     {
@@ -495,9 +501,9 @@ void DLogs2::DLogsContext::add_space(int level)
     else
         flush(level), add_space(level);
 }
-size_t DLogs2::DLogsContext::set_buffer_size(int s)
+size_t DLogs::DLogsContext::set_buffer_size(int s)
 {
-    if(buffer.size() != s && s >= DLOGS2_MIN_BUFFER_SIZE)
+    if(buffer.size() != s && s >= DLOGS_MIN_BUFFER_SIZE)
     {
         flush(0);
         size_t old_size = buffer.size();
@@ -506,7 +512,7 @@ size_t DLogs2::DLogsContext::set_buffer_size(int s)
     }
     return buffer.size();
 }
-size_t DLogs2::DLogsContext::expand_buffer(int s)
+size_t DLogs::DLogsContext::expand_buffer(int s)
 {
     if(is_expandable_buffer)
     {
@@ -517,104 +523,104 @@ size_t DLogs2::DLogsContext::expand_buffer(int s)
     }
     return buffer.size();
 }
-void DLogs2::DLogsContext::set_log_level(int l)
+void DLogs::DLogsContext::set_log_level(int l)
 {
     log_level = l;
 }
 
 
 
-DLogs2::DLogsMaster::DLogsMaster(DLogsContext *c, bool auto_nl) : context(c), auto_n(auto_nl), level(0)
+DLogs::DLogsMaster::DLogsMaster(DLogsContext *c, bool auto_nl) : context(c), auto_n(auto_nl), level(0)
 {
 }
-DLogs2::DLogsMaster::DLogsMaster(DLogs2::DLogsContext *c, bool temporary, const char *caller_name) : context(c), auto_n(temporary), level(0)
+DLogs::DLogsMaster::DLogsMaster(DLogs::DLogsContext *c, bool temporary, const char *caller_name) : context(c), auto_n(temporary), level(0)
 {
     if(temporary)
         context->add_header(level, caller_name);
 }
-DLogs2::DLogsMaster::~DLogsMaster()
+DLogs::DLogsMaster::~DLogsMaster()
 {
     if(auto_n)
         context->add_new_line(level);
     context->flush(level);
 }
 
-int DLogs2::DLogsMaster::setLevel(int l)
+int DLogs::DLogsMaster::setLevel(int l)
 {
     int _l = level;
     level = l;
     return _l;
 }
 
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator()(int l)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator()(int l)
 {
     level = l;
     return *this;
 }
 
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator()(int l, const char *caller_name)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator()(int l, const char *caller_name)
 {
     level = l;
     context->add_header(level, caller_name);
     return *this;
 }
 
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(FILE *p)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(FILE *p)
 {
     context->put_to_buffer(level, "[FILE: %p]", p);
     context->add_space(level);
     return *this;
 }
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(int v)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(int v)
 {
     context->put_to_buffer(level, "%d", v);
     context->add_space(level);
     return *this;
 }
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(const char *v)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(const char *v)
 {
     context->put_to_buffer(level, v);
     context->add_space(level);
     return *this;
 }
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(float v)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(float v)
 {
     context->put_to_buffer(level, context->get_float_format(), v);
     context->add_space(level);
     return *this;
 }
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(double v)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(double v)
 {
     context->put_to_buffer(level, context->get_double_format(), v);
     context->add_space(level);
     return *this;
 }
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(bool v)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(bool v)
 {
     if(v) context->put_to_buffer(level, "true");
     else context->put_to_buffer(level, "false");
     context->add_space(level);
     return *this;
 }
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(long v)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(long v)
 {
     context->put_to_buffer(level, "%ld", v);
     context->add_space(level);
     return *this;
 }
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(char v)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(char v)
 {
     context->put_to_buffer(level, "%c", v);
     context->add_space(level);
     return *this;
 }
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(std::nullptr_t)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(std::nullptr_t)
 {
     context->put_to_buffer(level, "nullptr");
     context->add_space(level);
     return *this;
 }
-DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(DLogs2::DLogsMaster &)
+DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(DLogs::DLogsMaster &)
 {
     context->flush(level);
     context->add_new_line(level);
@@ -623,7 +629,7 @@ DLogs2::DLogsMaster &DLogs2::DLogsMaster::operator <<(DLogs2::DLogsMaster &)
 
 
 
-void DLogs2::dlogs_separator(int level, DLogs2::DLogsContext *context)
+void DLogs::dlogs_separator(int level, DLogs::DLogsContext *context)
 {
     context->dlogs_separator_inner(level);
 }

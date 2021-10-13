@@ -16,13 +16,13 @@
 
 
 
-#define DLOGS2_DEFAULT_BUFFER_SIZE (1024)
-#define DLOGS2_MIN_BUFFER_SIZE (64)
-#define DLOGS2_MAX_BYTES_PUT_TO_BUFFER (DLOGS2_DEFAULT_BUFFER_SIZE * 4)
-#define DLOGS2_LOCAL_BUFFER_SIZE 128
+#define DLOGS_DEFAULT_BUFFER_SIZE (1024)
+#define DLOGS_MIN_BUFFER_SIZE (64)
+#define DLOGS_MAX_BYTES_PUT_TO_BUFFER (DLOGS_DEFAULT_BUFFER_SIZE * 4)
+#define DLOGS_LOCAL_BUFFER_SIZE 128
 #define D_FUNC_NAME __func__
 #define VN(var) " "##var": " << var
-namespace DLogs2
+namespace DLogs
 {
     struct header_state
     {
@@ -34,7 +34,7 @@ namespace DLogs2
         bool sname;
         bool level;
     };
-    extern char local_buffer[DLOGS2_LOCAL_BUFFER_SIZE];
+    extern char local_buffer[DLOGS_LOCAL_BUFFER_SIZE];
 
 
     struct DLogsFile
@@ -323,9 +323,9 @@ namespace DLogs2
 #define DLOGS_MESSAGE_WARNING__VALUE ("Warning")
 #define DLOGS_MESSAGE_INFO__VALUE ("Info")
 
-#define DLOGS_DEFINE_DEFAULT_CONTEXT DLogs2::DLogsContext log_context;
+#define DLOGS_DEFINE_DEFAULT_CONTEXT DLogs::DLogsContext log_context;
 #define DLOGS_INIT_DEFAULT_CONTEXT(STREAM_NAME) \
-    log_context = DLogs2::DLogsContext(STREAM_NAME); \
+    log_context = DLogs::DLogsContext(STREAM_NAME); \
     log_context.header_set_all(false, true, false, false, true, true); \
     log_context.add_message(DLOGS_MESSAGE_BADPOINTER__VALUE, DLOGS_MESSAGE_BADPOINTER__KEY); \
     log_context.add_message(DLOGS_MESSAGE_BADVALUE__VALUE, DLOGS_MESSAGE_BADVALUE__KEY); \
@@ -333,13 +333,13 @@ namespace DLogs2
     log_context.add_message(DLOGS_MESSAGE_BADALLOC__VALUE, DLOGS_MESSAGE_BADALLOC__KEY); \
     log_context.add_message(DLOGS_MESSAGE_ERROR__VALUE, DLOGS_MESSAGE_ERROR__KEY);
 
-#define DL_BADPOINTER(level, ...) DLogs2::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_BADPOINTER__KEY), __VA_ARGS__)
-#define DL_BADVALUE(level, ...) DLogs2::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_BADVALUE__KEY), __VA_ARGS__)
-#define DL_FUNCFAIL(level, ...) DLogs2::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_FUNCFAIL__KEY), __VA_ARGS__)
-#define DL_BADALLOC(level, ...) DLogs2::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_BADALLOC__KEY), __VA_ARGS__)
-#define DL_ERROR(level, ...) DLogs2::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_ERROR__KEY), __VA_ARGS__)
-#define DL_WARNING(level, ...) DLogs2::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_WARNING__KEY), __VA_ARGS__)
-#define DL_INFO(level, ...) DLogs2::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_INFO__KEY), __VA_ARGS__)
+#define DL_BADPOINTER(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_BADPOINTER__KEY), __VA_ARGS__)
+#define DL_BADVALUE(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_BADVALUE__KEY), __VA_ARGS__)
+#define DL_FUNCFAIL(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_FUNCFAIL__KEY), __VA_ARGS__)
+#define DL_BADALLOC(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_BADALLOC__KEY), __VA_ARGS__)
+#define DL_ERROR(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_ERROR__KEY), __VA_ARGS__)
+#define DL_WARNING(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_WARNING__KEY), __VA_ARGS__)
+#define DL_INFO(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_INFO__KEY), __VA_ARGS__)
 
 
 #endif // DLOGS_H
