@@ -325,7 +325,6 @@ DLogs::DLogsContext *DLogs::DLogsContext::header_set_message(const char *message
         header_message = message;
     return this;
 }
-
 DLogs::DLogsContext *DLogs::DLogsContext::header_set_message(int message_key)
 {
     auto m = messages.find(message_key);
@@ -367,7 +366,7 @@ char DLogs::local_buffer[DLOGS_LOCAL_BUFFER_SIZE];
     snprintf(local_buffer, DLOGS_LOCAL_BUFFER_SIZE, __VA_ARGS__); \
     put_to_buffer(level, local_buffer);
 
-void DLogs::DLogsContext::add_header(int level, const char *caller_name)
+void DLogs::DLogsContext::add_header(int level, const char *caller_name, int messageNumber)
 {
     time_t t = time(NULL);
     struct tm now = *localtime(&t);
@@ -379,8 +378,6 @@ void DLogs::DLogsContext::add_header(int level, const char *caller_name)
         LOAD_TO_BUFFER("[D: %d.%d.%d]", now.tm_mday, now.tm_mon+1, now.tm_year+1900);
         empty_header = 0;
     }
-
-
     if(header.fname && caller_name)
     {
         LOAD_TO_BUFFER("[F: %s]", caller_name);
@@ -421,6 +418,14 @@ void DLogs::DLogsContext::add_header(int level, const char *caller_name)
         if(empty_header == 0)
             add_space(level);
         LOAD_TO_BUFFER("%s:", header_message.c_str());
+        empty_header = 0;
+    }
+    else if(messageNumber > -1) {
+        if(empty_header == 0)
+            add_space(level);
+        auto m = messages.find(messageNumber);
+        if(m != messages.end())
+            LOAD_TO_BUFFER("%s:", m->second.c_str());
         empty_header = 0;
     }
     if(empty_header == 0)
@@ -544,27 +549,23 @@ DLogs::DLogsMaster::~DLogsMaster()
         context->add_new_line(level);
     context->flush(level);
 }
-
 int DLogs::DLogsMaster::setLevel(int l)
 {
     int _l = level;
     level = l;
     return _l;
 }
-
 DLogs::DLogsMaster &DLogs::DLogsMaster::operator()(int l)
 {
     level = l;
     return *this;
 }
-
 DLogs::DLogsMaster &DLogs::DLogsMaster::operator()(int l, const char *caller_name)
 {
     level = l;
     context->add_header(level, caller_name);
     return *this;
 }
-
 DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(FILE *p)
 {
     context->put_to_buffer(level, "[FILE: %p]", p);
@@ -626,9 +627,6 @@ DLogs::DLogsMaster &DLogs::DLogsMaster::operator <<(DLogs::DLogsMaster &)
     context->add_new_line(level);
     return *this;
 }
-
-
-
 void DLogs::dlogs_separator(int level, DLogs::DLogsContext *context)
 {
     context->dlogs_separator_inner(level);

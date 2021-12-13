@@ -133,7 +133,7 @@ namespace DLogs
         void precision_double(unsigned int p);
 
 
-        void add_header(int level, const char *caller_name);
+        void add_header(int level, const char *caller_name, int messageNumber = -1);
         void print_new_line(int level);
         void add_new_line(int level);
         void print_space(int level);
@@ -228,34 +228,44 @@ namespace DLogs
         friend void dlogs_base(int level, const char *caller_name, DLogsContext *context, const char* fmt, Args ... a);
         friend class DLogsMaster;
 
+
         template<class ... Args>
-        void dlogs_base_inner(int level, const char *caller_name, const char* fmt, Args ... a)
+        void dlogs_base_inner(int level, const char *caller_name, int messageNumber, const char* fmt, Args ... a)
         {
+//            size_t f = 0;
+//            f = flush(level);
+//            if(f)
+//                print_new_line(level);
 
-            size_t f = 0;
-            f = flush(level);
-            if(f)
+//            int l = snprintf(NULL, 0, fmt, a...);
+//            int buffer_old_size = buffer.size();
+//            if(l > buffer.size())
+//            {
+//                buffer_old_size = expand_buffer(l);
+//            }
+//            add_header(level, caller_name, messageNumber);
+//            flush(level);
+//            l = snprintf(buffer.begin(), buffer.size(), fmt, a...);
+//            buffer_pos += l;
+//            f = flush(level);
+//            if(f)
+//                print_new_line(level);
+
+//            if(is_restorable_buffer)
+//            {
+//                set_buffer_size(buffer_old_size);
+//            }
+
+            copy_mem(buffer.begin(), fmt, strlen(fmt));
+//            int l = snprintf(buffer.begin(), buffer.size(), fmt, a...);
+            buffer_pos += strlen(fmt);
+            if( flush(level) ) {
                 print_new_line(level);
-
-            int l = snprintf(NULL, 0, fmt, a...);
-            int buffer_old_size = buffer.size();
-            if(l > buffer.size())
-            {
-                buffer_old_size = expand_buffer(l);
             }
-            add_header(level, caller_name);
-            flush(level);
-            l = snprintf(buffer.begin(), buffer.size(), fmt, a...);
-            buffer_pos += l;
-            f = flush(level);
-            if(f)
-                print_new_line(level);
 
-            if(is_restorable_buffer)
-            {
-                set_buffer_size(buffer_old_size);
-            }
         }
+
+
 
         friend void dlogs_separator(int level, DLogsContext *context);
         void dlogs_separator_inner(int level);
@@ -298,13 +308,47 @@ namespace DLogs
         int level;
     };
 
-    template <class ... Args>
-    void dlogs_base(int level, const char *caller_name, DLogsContext *context, const char* fmt, Args ... a)
-    {
-        context->dlogs_base_inner(level, caller_name, fmt, a...);
 
+    template <class ... Args>
+    void dlogs_base(int level, const char *caller_name, int messageNumber, DLogsContext *context, const char* fmt, Args ... a)
+    {
+        context->dlogs_base_inner(level, caller_name, messageNumber, fmt, a...);
     }
+
+    /*
+    template <class ... Args>
+    void dlogs_base(int level, const char *caller_name, int messageNumber, DLogsContext *context, const char* fmt, Args ... a)
+    {
+        size_t f = 0;
+        context->flush(level);
+        if(f)
+            context->print_new_line(level);
+
+        int l = snprintf(NULL, 0, fmt, a...);
+        int buffer_old_size = context->buffer.size();
+        if(l > context->buffer.size())
+        {
+            buffer_old_size = context->expand_buffer(l);
+        }
+        context->add_header(level, caller_name, messageNumber);
+        context->flush(level);
+        l = snprintf(context->buffer.begin(), context->buffer.size(), fmt, a...);
+        context->buffer_pos += l;
+        f = context->flush(level);
+        if(f)
+            context->print_new_line(level);
+
+        if(context->is_restorable_buffer)
+        {
+            context->set_buffer_size(buffer_old_size);
+        }
+    }
+    */
+
+
     void dlogs_separator(int level, DLogsContext *context);
+
+
 }
 #define check___
 #define DLOGS_MESSAGE_BADPOINTER__KEY (1001)
@@ -324,6 +368,9 @@ namespace DLogs
 #define DLOGS_MESSAGE_INFO__VALUE ("Info")
 
 #define DLOGS_DEFINE_DEFAULT_CONTEXT DLogs::DLogsContext log_context;
+
+#define DLOGS_GLOBAL_CONTEXT (log_context)
+
 #define DLOGS_INIT_DEFAULT_CONTEXT(STREAM_NAME) \
     log_context = DLogs::DLogsContext(STREAM_NAME); \
     log_context.header_set_all(false, true, false, false, true, true); \
@@ -331,8 +378,14 @@ namespace DLogs
     log_context.add_message(DLOGS_MESSAGE_BADVALUE__VALUE, DLOGS_MESSAGE_BADVALUE__KEY); \
     log_context.add_message(DLOGS_MESSAGE_FUNCFAIL__VALUE, DLOGS_MESSAGE_FUNCFAIL__KEY); \
     log_context.add_message(DLOGS_MESSAGE_BADALLOC__VALUE, DLOGS_MESSAGE_BADALLOC__KEY); \
-    log_context.add_message(DLOGS_MESSAGE_ERROR__VALUE, DLOGS_MESSAGE_ERROR__KEY);
+    log_context.add_message(DLOGS_MESSAGE_ERROR__VALUE, DLOGS_MESSAGE_ERROR__KEY); \
+    log_context.add_message(DLOGS_MESSAGE_INFO__VALUE, DLOGS_MESSAGE_INFO__KEY); \
+    log_context.add_message(DLOGS_MESSAGE_WARNING__VALUE, DLOGS_MESSAGE_WARNING__KEY);
 
+#define DLOGS_INIT_GLOBAL_CONTEXT(STREAM_NAME, Initializator) \
+    DLogs::DLogsContextInitializator Initializator(STREAM_NAME, log_context);
+
+/*
 #define DL_BADPOINTER(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_BADPOINTER__KEY), __VA_ARGS__)
 #define DL_BADVALUE(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_BADVALUE__KEY), __VA_ARGS__)
 #define DL_FUNCFAIL(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_FUNCFAIL__KEY), __VA_ARGS__)
@@ -340,6 +393,23 @@ namespace DLogs
 #define DL_ERROR(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_ERROR__KEY), __VA_ARGS__)
 #define DL_WARNING(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_WARNING__KEY), __VA_ARGS__)
 #define DL_INFO(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, log_context.header_set_message(DLOGS_MESSAGE_INFO__KEY), __VA_ARGS__)
+*/
+#define DL_BADPOINTER(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, DLOGS_MESSAGE_BADPOINTER__KEY, &log_context, __VA_ARGS__)
+#define DL_BADVALUE(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, DLOGS_MESSAGE_BADVALUE__KEY, &log_context, __VA_ARGS__)
+#define DL_FUNCFAIL(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, DLOGS_MESSAGE_FUNCFAIL__KEY, &log_context, __VA_ARGS__)
+#define DL_BADALLOC(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, DLOGS_MESSAGE_BADALLOC__KEY,&log_context, __VA_ARGS__)
+#define DL_ERROR(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, DLOGS_MESSAGE_ERROR__KEY, &log_context, __VA_ARGS__)
+#define DL_WARNING(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, DLOGS_MESSAGE_WARNING__KEY, &log_context, __VA_ARGS__)
+#define DL_INFO(level, ...) DLogs::dlogs_base(level, D_FUNC_NAME, DLOGS_MESSAGE_INFO__KEY, &log_context, __VA_ARGS__)
 
 
+namespace DLogs {
+struct DLogsContextInitializator {
+    DLogsContextInitializator(const char *streamName, DLogsContext &log_context) {
+        DLOGS_INIT_DEFAULT_CONTEXT(streamName);
+        log_context.set_lvl_cmp_callback(DLogs::default_lvl_cmp__less_oe);
+        log_context.set_log_level(1);
+    }
+};
+}
 #endif // DLOGS_H
