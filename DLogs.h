@@ -232,36 +232,36 @@ namespace DLogs
         template<class ... Args>
         void dlogs_base_inner(int level, const char *caller_name, int messageNumber, const char* fmt, Args ... a)
         {
-//            size_t f = 0;
-//            f = flush(level);
-//            if(f)
-//                print_new_line(level);
-
-//            int l = snprintf(NULL, 0, fmt, a...);
-//            int buffer_old_size = buffer.size();
-//            if(l > buffer.size())
-//            {
-//                buffer_old_size = expand_buffer(l);
-//            }
-//            add_header(level, caller_name, messageNumber);
-//            flush(level);
-//            l = snprintf(buffer.begin(), buffer.size(), fmt, a...);
-//            buffer_pos += l;
-//            f = flush(level);
-//            if(f)
-//                print_new_line(level);
-
-//            if(is_restorable_buffer)
-//            {
-//                set_buffer_size(buffer_old_size);
-//            }
-
-            copy_mem(buffer.begin(), fmt, strlen(fmt));
-//            int l = snprintf(buffer.begin(), buffer.size(), fmt, a...);
-            buffer_pos += strlen(fmt);
-            if( flush(level) ) {
+            size_t f = 0;
+            f = flush(level);
+            if(f)
                 print_new_line(level);
+
+            int l = snprintf(NULL, 0, fmt, a...);
+            int buffer_old_size = buffer.size();
+            if(l > buffer.size())
+            {
+                buffer_old_size = expand_buffer(l);
             }
+            add_header(level, caller_name, messageNumber);
+            flush(level);
+            l = snprintf(buffer.begin(), buffer.size(), fmt, a...);
+            buffer_pos += l;
+            f = flush(level);
+            if(f)
+                print_new_line(level);
+
+            if(is_restorable_buffer)
+            {
+                set_buffer_size(buffer_old_size);
+            }
+
+//            copy_mem(buffer.begin(), fmt, strlen(fmt));
+////            int l = snprintf(buffer.begin(), buffer.size(), fmt, a...);
+//            buffer_pos += strlen(fmt);
+//            if( flush(level) ) {
+//                print_new_line(level);
+//            }
 
         }
 
