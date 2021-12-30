@@ -244,12 +244,13 @@ namespace DLogs
                 buffer_old_size = expand_buffer(l);
             }
             add_header(level, caller_name, messageNumber);
-            flush(level);
-            l = snprintf(buffer.begin(), buffer.size(), fmt, a...);
+//            flush(level);
+            l = snprintf(buffer.begin() + buffer_pos, buffer.size(), fmt, a...);
             buffer_pos += l;
             f = flush(level);
-            if(f)
-                print_new_line(level);
+//            if(f) {
+//                print_new_line(level);
+//            }
 
             if(is_restorable_buffer)
             {
