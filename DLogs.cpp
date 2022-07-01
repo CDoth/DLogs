@@ -6,6 +6,8 @@
 #define INNER_ERROR(description, error_code) \
     std::cout << " >>>>>>> DLogContext inner fault: error: [" << description << "] call: [" << D_FUNC_NAME << "] code: [" << error_code << "]" <<std::endl;
 
+
+
 int DLogs::default_console_parse(const char *line)
 {
     printf("%s",line);
@@ -82,15 +84,11 @@ const char *DLogs::DLogsContext::get_double_format()
 }
 void DLogs::DLogsContext::out(int level, const char *o)
 {
-//    std::cout << D_FUNC_NAME << " level: " << level << " content: [" << o << "]" << std::endl;
     if(is_console_available && c_print_callback)
     {
         if(lvl_cmp(log_level, level))
             c_print_callback(o);
-//        else
-//        {
-//            std::cout << "log_level: " << log_level << " level: " << level << std::endl;
-//        }
+
     }
 
     if(is_file_available && f_print_callback)
@@ -631,6 +629,7 @@ void DLogs::dlogs_separator(int level, DLogs::DLogsContext *context)
 {
     context->dlogs_separator_inner(level);
 }
+
 
 
 

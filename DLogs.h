@@ -211,9 +211,6 @@ namespace DLogs
         int double_precision;
 
 
-//        char *buffer;
-//        size_t buffer_size;
-
         DArray<char> buffer;
         int buffer_pos;
         int buffer_current_level;
@@ -248,21 +245,14 @@ namespace DLogs
             l = snprintf(buffer.begin() + buffer_pos, buffer.size(), fmt, a...);
             buffer_pos += l;
             f = flush(level);
-//            if(f) {
-//                print_new_line(level);
-//            }
+            if(f) {
+                print_new_line(level);
+            }
 
             if(is_restorable_buffer)
             {
                 set_buffer_size(buffer_old_size);
             }
-
-//            copy_mem(buffer.begin(), fmt, strlen(fmt));
-////            int l = snprintf(buffer.begin(), buffer.size(), fmt, a...);
-//            buffer_pos += strlen(fmt);
-//            if( flush(level) ) {
-//                print_new_line(level);
-//            }
 
         }
 
@@ -374,7 +364,7 @@ namespace DLogs
 
 #define DLOGS_INIT_DEFAULT_CONTEXT(STREAM_NAME) \
     log_context = DLogs::DLogsContext(STREAM_NAME); \
-    log_context.header_set_all(false, true, false, false, true, true); \
+    log_context.header_set_all(false, true, false, false, false, false); \
     log_context.add_message(DLOGS_MESSAGE_BADPOINTER__VALUE, DLOGS_MESSAGE_BADPOINTER__KEY); \
     log_context.add_message(DLOGS_MESSAGE_BADVALUE__VALUE, DLOGS_MESSAGE_BADVALUE__KEY); \
     log_context.add_message(DLOGS_MESSAGE_FUNCFAIL__VALUE, DLOGS_MESSAGE_FUNCFAIL__KEY); \
@@ -407,9 +397,13 @@ namespace DLogs
 namespace DLogs {
 struct DLogsContextInitializator {
     DLogsContextInitializator(const char *streamName, DLogsContext &log_context) {
+
         DLOGS_INIT_DEFAULT_CONTEXT(streamName);
+
+
         log_context.set_lvl_cmp_callback(DLogs::default_lvl_cmp__less_oe);
         log_context.set_log_level(1);
+
     }
 };
 }
